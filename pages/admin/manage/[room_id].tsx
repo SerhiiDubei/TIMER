@@ -51,11 +51,11 @@ export default function AdminManage() {
   }, [room_id, fetchState, router]);
 
   useEffect(() => {
-    const interval = setInterval(fetchState, 3000);
+    const interval = setInterval(fetchState, 1000); // More responsive UI
     return () => clearInterval(interval);
   }, [fetchState]);
 
-  // Temporary polling until Vercel Cron works + DB migration done
+  // Polling for elimination check (every 2 seconds)
   useEffect(() => {
     if (!room_id || typeof room_id !== 'string') return;
     if (!state || state.room.status !== 'running') return;
@@ -72,9 +72,9 @@ export default function AdminManage() {
       }
     };
 
-    // Check every 10 seconds
+    // Check every 2 seconds (for responsive elimination)
     checkEliminations();
-    const interval = setInterval(checkEliminations, 10000);
+    const interval = setInterval(checkEliminations, 2000);
 
     return () => clearInterval(interval);
   }, [room_id, state?.room.status]);

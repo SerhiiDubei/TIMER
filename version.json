@@ -1,11 +1,11 @@
 {
-  "version": "2.0.1",
-  "buildTime": "2026-02-01T18:54:42.177Z",
+  "version": "2.0.2",
+  "buildTime": "2026-02-01T19:35:00Z",
   "features": [
-    "✅ Database-driven eliminations (NO POLLING!)",
-    "✅ Auto-calculated should_eliminate_at",
-    "✅ Database triggers on code usage",
-    "✅ 1 request/minute instead of 12/minute",
+    "✅ Database-driven eliminations WORKING!",
+    "✅ Fixed auto_eliminate_players SQL",
+    "✅ Polling every 2s (responsive elimination)",
+    "✅ UI updates every 1s",
     "Custom room names",
     "Minimum 2 players to start",
     "Winner detection",
