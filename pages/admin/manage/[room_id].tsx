@@ -55,13 +55,29 @@ export default function AdminManage() {
     return () => clearInterval(interval);
   }, [fetchState]);
 
-  // ===================================
-  // НОВА АРХІТЕКТУРА: БЕЗ POLLING!
-  // ===================================
-  // База САМА знає коли елімінувати (should_eliminate_at)
-  // Realtime автоматично пушить зміни в players
-  // Цей useEffect ВИДАЛЕНО - більше не потрібен!
-  // ===================================
+  // Temporary polling until Vercel Cron works + DB migration done
+  useEffect(() => {
+    if (!room_id || typeof room_id !== 'string') return;
+    if (!state || state.room.status !== 'running') return;
+
+    const checkEliminations = async () => {
+      try {
+        await fetch('/api/admin/check-eliminations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: 'timer-game-secret-2026' })
+        });
+      } catch (error) {
+        console.error('[CHECK] Error:', error);
+      }
+    };
+
+    // Check every 10 seconds
+    checkEliminations();
+    const interval = setInterval(checkEliminations, 10000);
+
+    return () => clearInterval(interval);
+  }, [room_id, state?.room.status]);
 
   // Realtime
   useEffect(() => {
