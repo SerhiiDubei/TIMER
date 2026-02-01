@@ -11,11 +11,13 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE rooms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     room_code TEXT UNIQUE NOT NULL,
+    room_name TEXT,
     status TEXT NOT NULL CHECK (status IN ('lobby', 'running', 'finished')),
     admin_key TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     started_at TIMESTAMPTZ,
-    base_seconds INTEGER NOT NULL DEFAULT 1200
+    base_seconds INTEGER NOT NULL DEFAULT 1200,
+    winner_player_id UUID
 );
 
 CREATE INDEX idx_rooms_room_code ON rooms(room_code);
@@ -159,6 +161,8 @@ RETURNS TABLE(player_id UUID, player_name TEXT) AS $$
 DECLARE
     v_player RECORD;
     v_remaining INTEGER;
+    v_alive_count INTEGER;
+    v_winner_id UUID;
 BEGIN
     -- Loop through all alive players in the room
     FOR v_player IN 
@@ -186,6 +190,23 @@ BEGIN
             RETURN NEXT;
         END IF;
     END LOOP;
+
+    -- Check if only 1 player remains alive - they win!
+    SELECT COUNT(*), MAX(id) INTO v_alive_count, v_winner_id
+    FROM players
+    WHERE room_id = p_room_id
+    AND eliminated_at IS NULL;
+
+    IF v_alive_count = 1 THEN
+        -- Set room to finished and mark winner
+        UPDATE rooms
+        SET status = 'finished', winner_player_id = v_winner_id
+        WHERE id = p_room_id;
+
+        -- Log game finished event
+        INSERT INTO events (room_id, type, target_player_id, payload)
+        VALUES (p_room_id, 'game_finished', v_winner_id, jsonb_build_object('winner_id', v_winner_id));
+    END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

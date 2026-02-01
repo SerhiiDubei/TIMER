@@ -4,6 +4,7 @@ import Head from 'next/head';
 
 export default function CreateRoom() {
   const router = useRouter();
+  const [roomName, setRoomName] = useState('');
   const [baseMinutes, setBaseMinutes] = useState(20);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,6 +19,7 @@ export default function CreateRoom() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          room_name: roomName.trim() || undefined,
           base_seconds: baseMinutes * 60
         })
       });
@@ -59,6 +61,23 @@ export default function CreateRoom() {
             </p>
 
             <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">
+                  Room Name (optional)
+                </label>
+                <input
+                  type="text"
+                  value={roomName}
+                  onChange={(e) => setRoomName(e.target.value)}
+                  placeholder="My Epic Game"
+                  maxLength={50}
+                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <p className="text-white/50 text-xs mt-1">
+                  Give your room a custom name (optional)
+                </p>
+              </div>
+
               <div>
                 <label className="block text-white text-sm font-medium mb-2">
                   Starting Time (minutes)

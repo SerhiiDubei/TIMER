@@ -3,16 +3,18 @@ export type RoomStatus = 'lobby' | 'running' | 'finished';
 
 export type EffectType = 'self_add' | 'self_subtract' | 'steal' | 'team_add' | 'temptation';
 
-export type EventType = 'time_adjust' | 'code_used' | 'game_started' | 'player_eliminated' | 'player_joined';
+export type EventType = 'time_adjust' | 'code_used' | 'game_started' | 'player_eliminated' | 'player_joined' | 'game_finished';
 
 export interface Room {
   id: string;
   room_code: string;
+  room_name?: string;
   status: RoomStatus;
   admin_key: string;
   created_at: string;
   started_at: string | null;
   base_seconds: number;
+  winner_player_id?: string | null;
 }
 
 export interface Player {

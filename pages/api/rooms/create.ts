@@ -13,7 +13,7 @@ export default async function handler(
 
   try {
     const supabase = getServiceSupabase();
-    const { base_seconds = 1200 } = req.body;
+    const { base_seconds = 1200, room_name } = req.body;
 
     // Generate unique room code
     let roomCode = generateRoomCode();
@@ -38,6 +38,7 @@ export default async function handler(
       .from('rooms')
       .insert({
         room_code: roomCode,
+        room_name: room_name || null,
         status: 'lobby',
         admin_key: adminKey,
         base_seconds

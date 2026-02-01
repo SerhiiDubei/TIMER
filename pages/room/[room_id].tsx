@@ -158,6 +158,9 @@ export default function RoomPage() {
   const isEliminated = myPlayer?.eliminated_at !== null;
   const isLobby = state.room.status === 'lobby';
   const isRunning = state.room.status === 'running';
+  const isFinished = state.room.status === 'finished';
+  const winner = state.players.find(p => p.id === state.room.winner_player_id);
+  const timeIsUp = localRemaining <= 0 && isRunning && !isEliminated;
 
   return (
     <>
@@ -172,7 +175,7 @@ export default function RoomPage() {
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold text-white">
-                  Room: {state.room.room_code}
+                  {state.room.room_name || `Room: ${state.room.room_code}`}
                 </h1>
                 <p className="text-white/60">
                   {playerName} {isEliminated && '(Eliminated)'}
@@ -196,24 +199,58 @@ export default function RoomPage() {
               <p className="text-white/60 mb-6">
                 {state.players.length} player{state.players.length !== 1 ? 's' : ''} in lobby
               </p>
-              <div className="text-white/80">
+              <div className="text-white/80 mb-4">
                 Starting time: {Math.floor(state.room.base_seconds / 60)} minutes
               </div>
+              {state.players.length < 2 && (
+                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-yellow-200 text-sm">
+                  ⚠️ Need at least 2 players to start
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Game Finished Screen */}
+          {isFinished && (
+            <div className="bg-gradient-to-br from-yellow-500/20 to-purple-500/20 backdrop-blur-lg rounded-2xl p-8 border border-yellow-500/50 text-center mb-4">
+              <div className="text-6xl mb-4">🏆</div>
+              <h2 className="text-4xl font-bold text-white mb-4">
+                Game Over!
+              </h2>
+              {winner && (
+                <div className="text-2xl text-yellow-300 font-semibold">
+                  {winner.id === playerId ? 'YOU WIN!' : `${winner.name} wins!`}
+                </div>
+              )}
             </div>
           )}
 
           {/* Game Screen */}
-          {isRunning && (
+          {isRunning && !isFinished && (
             <>
+              {/* Time Up Warning */}
+              {timeIsUp && (
+                <div className="bg-red-500/30 backdrop-blur-lg rounded-2xl p-6 mb-4 border-2 border-red-500 text-center animate-pulse">
+                  <div className="text-5xl mb-2">⏰</div>
+                  <div className="text-2xl font-bold text-white mb-2">
+                    Your time is up!
+                  </div>
+                  <div className="text-red-200">
+                    Waiting for elimination check...
+                  </div>
+                </div>
+              )}
+
               {/* Timer */}
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-4 border border-white/20 text-center">
                 <div className="text-white/60 text-sm mb-2">Your Time Remaining</div>
                 <div className={`text-7xl font-bold ${
+                  localRemaining <= 0 ? 'text-red-500 animate-pulse' :
                   localRemaining <= 60 ? 'text-red-400 animate-pulse' :
                   localRemaining <= 180 ? 'text-yellow-300' :
                   'text-white'
                 }`}>
-                  {formatTime(localRemaining)}
+                  {formatTime(Math.max(0, localRemaining))}
                 </div>
                 {state.my_adjustments !== undefined && state.my_adjustments !== 0 && (
                   <div className="text-white/60 text-sm mt-2">
@@ -308,6 +345,7 @@ export default function RoomPage() {
                     {event.type === 'code_used' && '🎫 Code redeemed'}
                     {event.type === 'time_adjust' && `⏱️ Time adjusted (${event.time_delta_seconds > 0 ? '+' : ''}${event.time_delta_seconds}s)`}
                     {event.type === 'player_eliminated' && '💀 Player eliminated'}
+                    {event.type === 'game_finished' && '🏆 Game finished!'}
                   </div>
                 ))}
               </div>

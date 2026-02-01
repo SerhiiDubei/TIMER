@@ -38,6 +38,17 @@ export default async function handler(
       return res.status(400).json({ error: 'Game already started or finished' });
     }
 
+    // Check minimum players (need at least 2)
+    const { data: players } = await supabase
+      .from('players')
+      .select('id')
+      .eq('room_id', room_id)
+      .is('eliminated_at', null);
+
+    if (!players || players.length < 2) {
+      return res.status(400).json({ error: 'Need at least 2 players to start the game' });
+    }
+
     // Start game
     const started_at = new Date().toISOString();
     
