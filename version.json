@@ -1,11 +1,12 @@
 {
-  "version": "1.1.0",
-  "buildTime": "2026-02-01T17:51:06.882Z",
+  "version": "1.1.1",
+  "buildTime": "2026-02-01T17:57:23.265Z",
   "features": [
     "Custom room names",
     "Minimum 2 players to start",
     "Winner detection",
     "Auto-elimination every 5s",
-    "Timer animation fixed"
+    "Timer animation fixed",
+    "Debug logging for eliminations"
   ]
 }
