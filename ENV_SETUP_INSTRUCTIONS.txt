@@ -1,0 +1,59 @@
+================================================
+ІНСТРУКЦІЯ: Налаштування .env.local
+================================================
+
+ШАГ 1: Створіть файл .env.local в папці TIMER
+------------------------------------------------
+Створіть новий файл: c:\Users\user\Desktop\TIMER\.env.local
+
+
+ШАГ 2: Скопіюйте цей вміст в файл
+------------------------------------------------
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://ffnmlfnzufddmecfpive.supabase.co
+
+# ЗАМІНІТЬ ЦЕ НА ВАШ ANON KEY!
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_KEY_HERE
+
+SUPABASE_SERVICE_ROLE_KEY=sbp_2de832711f66f44fa5f220e50c24480aadae1c7c
+
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+CRON_SECRET=timer-game-secret-2026
+
+
+ШАГ 3: Отримайте ANON KEY
+------------------------------------------------
+1. Відкрийте: https://supabase.com/dashboard/project/ffnmlfnzufddmecfpive/api
+2. Знайдіть секцію "Project API keys"
+3. Скопіюйте ключ "anon public" (довгий текст, починається з eyJ...)
+4. Замініть "YOUR_ANON_KEY_HERE" на скопійований ключ
+
+
+ШАГ 4: Виконайте SQL схему
+------------------------------------------------
+1. Відкрийте: https://supabase.com/dashboard/project/ffnmlfnzufddmecfpive/editor
+2. Створіть New Query
+3. Скопіюйте весь вміст файлу supabase-schema.sql
+4. Вставте і натисніть Run
+
+
+ШАГ 5: Увімкніть Realtime
+------------------------------------------------
+1. Відкрийте: https://supabase.com/dashboard/project/ffnmlfnzufddmecfpive/database/replication
+2. Увімкніть replication для таблиць:
+   - rooms
+   - players  
+   - events
+
+
+ШАГ 6: Запустіть проект
+------------------------------------------------
+npm run dev
+
+Відкрийте: http://localhost:3000
+
+
+================================================
+ГОТОВО! Проект має запуститись!
+================================================
