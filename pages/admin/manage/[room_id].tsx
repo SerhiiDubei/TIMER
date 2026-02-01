@@ -54,6 +54,31 @@ export default function AdminManage() {
     return () => clearInterval(interval);
   }, [fetchState]);
 
+  // Auto-check eliminations every 5 seconds when game is running
+  useEffect(() => {
+    if (!room_id || !state || state.room.status !== 'running') return;
+
+    const checkEliminations = async () => {
+      try {
+        await fetch('/api/admin/check-eliminations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: 'timer-game-secret-2026' })
+        });
+        // Refresh state after checking
+        fetchState();
+      } catch (error) {
+        console.error('Failed to check eliminations:', error);
+      }
+    };
+
+    // Check immediately and then every 5 seconds
+    checkEliminations();
+    const interval = setInterval(checkEliminations, 5000);
+
+    return () => clearInterval(interval);
+  }, [room_id, state?.room.status]);
+
   // Realtime
   useEffect(() => {
     if (!room_id || typeof room_id !== 'string') return;

@@ -244,12 +244,12 @@ export default function RoomPage() {
               {/* Timer */}
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-4 border border-white/20 text-center">
                 <div className="text-white/60 text-sm mb-2">Your Time Remaining</div>
-                <div className={`text-7xl font-bold ${
+                <div className={`text-7xl font-bold tabular-nums transition-colors duration-300 ${
                   localRemaining <= 0 ? 'text-red-500 animate-pulse' :
                   localRemaining <= 60 ? 'text-red-400 animate-pulse' :
                   localRemaining <= 180 ? 'text-yellow-300' :
                   'text-white'
-                }`}>
+                }`} style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {formatTime(Math.max(0, localRemaining))}
                 </div>
                 {state.my_adjustments !== undefined && state.my_adjustments !== 0 && (
