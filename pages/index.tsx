@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import VersionFooter from '@/components/VersionFooter';
 
 export default function Home() {
   const router = useRouter();
@@ -122,6 +123,7 @@ export default function Home() {
             Enter the room code shared by your game admin
           </p>
         </div>
+        <VersionFooter />
       </div>
 
       <style jsx global>{`

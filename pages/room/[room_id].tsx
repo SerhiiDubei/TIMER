@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { supabase } from '@/lib/supabase';
 import { RoomState, Player, Event } from '@/lib/types';
 import { formatTime, calculateRemainingTime } from '@/lib/utils';
+import VersionFooter from '@/components/VersionFooter';
 
 export default function RoomPage() {
   const router = useRouter();
@@ -352,6 +353,7 @@ export default function RoomPage() {
             </div>
           )}
         </div>
+        <VersionFooter />
       </div>
     </>
   );
