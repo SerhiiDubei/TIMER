@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { Shield, Clock, Sparkles, ChevronUp, ChevronDown } from 'lucide-react';
+import Starfield from '@/components/Starfield';
 
 export default function CreateRoom() {
   const router = useRouter();
@@ -8,6 +10,10 @@ export default function CreateRoom() {
   const [baseMinutes, setBaseMinutes] = useState(20);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const adjustMinutes = (delta: number) => {
+    setBaseMinutes(prev => Math.max(1, Math.min(60, prev + delta)));
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,75 +53,124 @@ export default function CreateRoom() {
   return (
     <>
       <Head>
-        <title>Create Room - Admin</title>
+        <title>🛡️ Create Room - Archmage</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
-            <h1 className="text-3xl font-bold text-white text-center mb-2">
-              🎮 Create Game Room
-            </h1>
-            <p className="text-white/60 text-center mb-6 text-sm">
-              Set up a new game as admin
-            </p>
+      <Starfield />
 
-            <form onSubmit={handleCreate} className="space-y-4">
+      <div className="min-h-screen flex items-center justify-center p-4 md:p-8 relative z-10">
+        <div className="max-w-md w-full">
+          <div className="pixel-box p-8 rounded-lg" style={{
+            '--border-color': '#f4a261',
+            '--glow-color': 'rgba(244, 162, 97, 0.2)'
+          } as React.CSSProperties}>
+            
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="flex justify-center items-center gap-3 mb-4">
+                <Shield size={32} className="text-arcade-amber animate-pulse" />
+                <Sparkles size={24} className="text-arcade-gold animate-float" />
+              </div>
+              <h1 className="text-xl md:text-2xl font-arcade text-arcade-amber text-glow-amber mb-2 tracking-wider">
+                ARCHMAGE SANCTUM
+              </h1>
+              <p className="text-xs text-arcade-cream/60 tracking-widest font-arcade">
+                CREATE RITUAL
+              </p>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-6">
+              {/* Room Name */}
               <div>
-                <label className="block text-white text-sm font-medium mb-2">
-                  Room Name (optional)
+                <label className="block text-arcade-gold text-xs font-arcade mb-2 tracking-wider">
+                  RITUAL NAME
                 </label>
                 <input
                   type="text"
                   value={roomName}
                   onChange={(e) => setRoomName(e.target.value)}
-                  placeholder="My Epic Game"
-                  maxLength={50}
-                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="EPIC BATTLE"
+                  maxLength={30}
+                  className="w-full px-4 py-3 bg-black/50 border-2 border-arcade-gold rounded-lg text-arcade-cream placeholder-arcade-cream/30 focus:outline-none focus:border-arcade-amber focus:shadow-[0_0_10px_rgba(244,162,97,0.3)] font-arcade text-sm uppercase transition-all"
                 />
-                <p className="text-white/50 text-xs mt-1">
-                  Give your room a custom name (optional)
+                <p className="text-arcade-cream/40 text-[10px] mt-1 font-arcade">
+                  OPTIONAL
                 </p>
               </div>
 
+              {/* Base Time */}
               <div>
-                <label className="block text-white text-sm font-medium mb-2">
-                  Starting Time (minutes)
+                <label className="block text-arcade-teal text-xs font-arcade mb-2 tracking-wider">
+                  BASE TIME
                 </label>
-                <input
-                  type="number"
-                  value={baseMinutes}
-                  onChange={(e) => setBaseMinutes(parseInt(e.target.value) || 20)}
-                  min={1}
-                  max={120}
-                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  required
-                />
-                <p className="text-white/50 text-xs mt-1">
-                  Each player will start with this amount of time
-                </p>
+                
+                <div className="pixel-box p-4 rounded-lg flex items-center justify-between" style={{
+                  '--border-color': '#40e0d0',
+                  '--glow-color': 'rgba(64, 224, 208, 0.2)'
+                } as React.CSSProperties}>
+                  <button
+                    type="button"
+                    onClick={() => adjustMinutes(-1)}
+                    className="w-12 h-12 bg-arcade-teal/20 border-2 border-arcade-teal rounded-lg flex items-center justify-center hover:bg-arcade-teal/30 active:scale-95 transition-all"
+                  >
+                    <ChevronDown size={20} className="text-arcade-teal" />
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <Clock size={24} className="text-arcade-teal animate-pulse" />
+                    <span className="text-3xl font-arcade text-arcade-teal text-glow-teal tabular-nums">
+                      {baseMinutes.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-sm font-arcade text-arcade-teal/60">
+                      MIN
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => adjustMinutes(1)}
+                    className="w-12 h-12 bg-arcade-teal/20 border-2 border-arcade-teal rounded-lg flex items-center justify-center hover:bg-arcade-teal/30 active:scale-95 transition-all"
+                  >
+                    <ChevronUp size={20} className="text-arcade-teal" />
+                  </button>
+                </div>
               </div>
 
+              {/* Error */}
               {error && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm">
+                <div className="pixel-box p-3 rounded-lg text-xs font-arcade text-arcade-red" style={{
+                  '--border-color': '#ff4757',
+                  '--glow-color': 'rgba(255, 71, 87, 0.3)'
+                } as React.CSSProperties}>
                   {error}
                 </div>
               )}
 
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full pixel-box py-4 rounded-lg font-arcade text-sm tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(224,86,253,0.4)]"
+                style={{
+                  '--border-color': '#e056fd',
+                  '--glow-color': 'rgba(224, 86, 253, 0.2)'
+                } as React.CSSProperties}
               >
-                {loading ? 'Creating...' : 'Create Room'}
+                <div className="flex items-center justify-center gap-2">
+                  <Shield size={16} className="text-arcade-purple" />
+                  <span className="text-arcade-purple">
+                    {loading ? 'CREATING...' : 'BEGIN RITUAL'}
+                  </span>
+                </div>
               </button>
             </form>
 
+            {/* Back button */}
             <button
               onClick={() => router.push('/')}
-              className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg transition-colors text-sm"
+              className="w-full mt-4 py-2 text-xs font-arcade text-arcade-cream/60 hover:text-arcade-cream transition-colors"
             >
-              Back to Home
+              ← BACK
             </button>
           </div>
         </div>

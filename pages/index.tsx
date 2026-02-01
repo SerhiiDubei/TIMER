@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
+import Head from 'head';
+import { Gamepad2, Users, Shield, Sparkles } from 'lucide-react';
+import Starfield from '@/components/Starfield';
 import VersionFooter from '@/components/VersionFooter';
 
 export default function Home() {
@@ -51,22 +53,40 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Lobby Timer Game</title>
-        <meta name="description" content="Multiplayer timer game with lobby" />
+        <title>⏱️ Arcane Timer Arena</title>
+        <meta name="description" content="Pixel-style multiplayer timer game" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
-            <h1 className="text-4xl font-bold text-white text-center mb-8">
-              ⏱️ Timer Game
-            </h1>
+      <Starfield />
 
+      <div className="min-h-screen flex items-center justify-center p-4 md:p-8 relative z-10">
+        <div className="max-w-md w-full">
+          {/* Arcade Cabinet Style */}
+          <div className="pixel-box p-8 rounded-lg" style={{
+            '--border-color': '#ffd700',
+            '--glow-color': 'rgba(255, 215, 0, 0.2)'
+          } as React.CSSProperties}>
+            
+            {/* Title */}
+            <div className="text-center mb-8">
+              <div className="flex justify-center items-center gap-3 mb-4">
+                <Gamepad2 size={32} className="text-arcade-gold animate-pulse" />
+                <Sparkles size={24} className="text-arcade-purple animate-float" />
+              </div>
+              <h1 className="text-2xl md:text-3xl font-arcade text-arcade-gold text-glow-gold mb-2 tracking-wider">
+                ARCANE TIMER
+              </h1>
+              <p className="text-xs text-arcade-cream/60 tracking-widest">
+                ARENA
+              </p>
+            </div>
+
+            {/* Join Form */}
             <form onSubmit={handleJoin} className="space-y-4">
               <div>
-                <label className="block text-white text-sm font-medium mb-2">
-                  Room Code
+                <label className="block text-arcade-teal text-xs font-arcade mb-2 tracking-wider">
+                  ROOM CODE
                 </label>
                 <input
                   type="text"
@@ -74,28 +94,31 @@ export default function Home() {
                   onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                   placeholder="ABC123"
                   maxLength={6}
-                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase"
+                  className="w-full px-4 py-3 bg-black/50 border-2 border-arcade-teal rounded-lg text-arcade-cream placeholder-arcade-cream/30 focus:outline-none focus:border-arcade-gold focus:shadow-[0_0_10px_rgba(255,215,0,0.3)] uppercase font-arcade text-sm transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-white text-sm font-medium mb-2">
-                  Your Name
+                <label className="block text-arcade-purple text-xs font-arcade mb-2 tracking-wider">
+                  YOUR NAME
                 </label>
                 <input
                   type="text"
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="Enter your name"
-                  maxLength={50}
-                  className="w-full px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="PLAYER"
+                  maxLength={20}
+                  className="w-full px-4 py-3 bg-black/50 border-2 border-arcade-purple rounded-lg text-arcade-cream placeholder-arcade-cream/30 focus:outline-none focus:border-arcade-gold focus:shadow-[0_0_10px_rgba(255,215,0,0.3)] font-arcade text-sm transition-all"
                   required
                 />
               </div>
 
               {error && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm">
+                <div className="pixel-box p-3 rounded-lg text-xs font-arcade text-arcade-red" style={{
+                  '--border-color': '#ff4757',
+                  '--glow-color': 'rgba(255, 71, 87, 0.3)'
+                } as React.CSSProperties}>
                   {error}
                 </div>
               )}
@@ -103,43 +126,50 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full pixel-box py-4 rounded-lg font-arcade text-sm tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(57,255,20,0.4)]"
+                style={{
+                  '--border-color': '#39ff14',
+                  '--glow-color': 'rgba(57, 255, 20, 0.2)'
+                } as React.CSSProperties}
               >
-                {loading ? 'Joining...' : 'Join Game'}
+                <div className="flex items-center justify-center gap-2">
+                  <Users size={16} className="text-arcade-green" />
+                  <span className="text-arcade-green">
+                    {loading ? 'JOINING...' : 'JOIN GAME'}
+                  </span>
+                </div>
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-white/20">
-              <button
-                onClick={handleCreateRoom}
-                className="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 px-4 rounded-lg transition-colors border border-white/30"
-              >
-                Create New Room (Admin)
-              </button>
-            </div>
+            {/* Divider */}
+            <div className="my-6 border-t-2 border-arcade-gold/30"></div>
+
+            {/* Create Room Button */}
+            <button
+              onClick={handleCreateRoom}
+              className="w-full pixel-box py-4 rounded-lg font-arcade text-sm tracking-wider transition-all active:scale-95 hover:shadow-[0_0_20px_rgba(244,162,97,0.4)]"
+              style={{
+                '--border-color': '#f4a261',
+                '--glow-color': 'rgba(244, 162, 97, 0.2)'
+              } as React.CSSProperties}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Shield size={16} className="text-arcade-amber" />
+                <span className="text-arcade-amber">
+                  CREATE ROOM
+                </span>
+              </div>
+            </button>
           </div>
 
-          <p className="text-white/60 text-center mt-4 text-sm">
-            Enter the room code shared by your game admin
+          {/* Footer hint */}
+          <p className="text-arcade-cream/40 text-center mt-6 text-xs font-arcade tracking-wider">
+            ENTER CODE FROM ADMIN
           </p>
         </div>
+        
         <VersionFooter />
       </div>
-
-      <style jsx global>{`
-        * {
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
-        }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-            sans-serif;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-        }
-      `}</style>
     </>
   );
 }
