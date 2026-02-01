@@ -34,11 +34,18 @@ export default async function handler(
     // Check eliminations for each room
     const allEliminated = [];
     for (const room of rooms) {
+      console.log(`[CHECK-ELIMINATIONS] Checking room ${room.id}`);
+      
       const { data: eliminated, error } = await supabase
         .rpc('check_eliminations', { p_room_id: room.id });
 
-      if (!error && eliminated) {
-        allEliminated.push(...eliminated);
+      if (error) {
+        console.error(`[CHECK-ELIMINATIONS] Error for room ${room.id}:`, error);
+      } else {
+        console.log(`[CHECK-ELIMINATIONS] Room ${room.id} eliminated:`, eliminated);
+        if (eliminated) {
+          allEliminated.push(...eliminated);
+        }
       }
     }
 

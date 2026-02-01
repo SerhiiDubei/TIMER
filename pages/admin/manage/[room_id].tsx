@@ -61,15 +61,19 @@ export default function AdminManage() {
 
     const checkEliminations = async () => {
       try {
-        await fetch('/api/admin/check-eliminations', {
+        console.log('[ADMIN] Checking eliminations for room:', room_id);
+        const response = await fetch('/api/admin/check-eliminations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ secret: 'timer-game-secret-2026' })
         });
+        const data = await response.json();
+        console.log('[ADMIN] Check eliminations result:', data);
+        
         // Refresh state after checking
-        fetchState();
+        await fetchState();
       } catch (error) {
-        console.error('Failed to check eliminations:', error);
+        console.error('[ADMIN] Failed to check eliminations:', error);
       }
     };
 
