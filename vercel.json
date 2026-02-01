@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/admin/check-eliminations",
-      "schedule": "*/10 * * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }
