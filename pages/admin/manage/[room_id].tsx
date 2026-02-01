@@ -57,32 +57,43 @@ export default function AdminManage() {
 
   // Auto-check eliminations every 5 seconds when game is running
   useEffect(() => {
-    if (!room_id || !state || state.room.status !== 'running') return;
+    if (!room_id || typeof room_id !== 'string') return;
+    if (!state || state.room.status !== 'running') return;
+
+    console.log('[ADMIN] Starting elimination checker for room:', room_id);
 
     const checkEliminations = async () => {
       try {
-        console.log('[ADMIN] Checking eliminations for room:', room_id);
+        console.log('[ADMIN] → Checking eliminations...');
         const response = await fetch('/api/admin/check-eliminations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ secret: 'timer-game-secret-2026' })
         });
         const data = await response.json();
-        console.log('[ADMIN] Check eliminations result:', data);
+        console.log('[ADMIN] ← Result:', data);
         
-        // Refresh state after checking
-        await fetchState();
+        // Force refresh state
+        if (data.eliminated && data.eliminated.length > 0) {
+          console.log('[ADMIN] Players eliminated! Refreshing...');
+          await fetchState();
+        }
       } catch (error) {
-        console.error('[ADMIN] Failed to check eliminations:', error);
+        console.error('[ADMIN] ✗ Error:', error);
       }
     };
 
-    // Check immediately and then every 5 seconds
+    // Check immediately
     checkEliminations();
+    
+    // Then every 5 seconds
     const interval = setInterval(checkEliminations, 5000);
 
-    return () => clearInterval(interval);
-  }, [room_id, state?.room.status]);
+    return () => {
+      console.log('[ADMIN] Stopping elimination checker');
+      clearInterval(interval);
+    };
+  }, [room_id, state?.room.status, fetchState]);
 
   // Realtime
   useEffect(() => {
