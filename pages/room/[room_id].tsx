@@ -215,7 +215,7 @@ export default function RoomPage() {
                 }`}>
                   {formatTime(localRemaining)}
                 </div>
-                {state.my_adjustments !== 0 && (
+                {state.my_adjustments !== undefined && state.my_adjustments !== 0 && (
                   <div className="text-white/60 text-sm mt-2">
                     Adjustments: {state.my_adjustments > 0 ? '+' : ''}{state.my_adjustments}s
                   </div>
