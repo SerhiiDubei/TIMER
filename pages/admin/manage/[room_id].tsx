@@ -209,10 +209,10 @@ export default function AdminManage() {
     );
   }
 
-  const isLobby = state.room.status === 'lobby';
-  const isRunning = state.room.status === 'running';
-  const isFinished = state.room.status === 'finished';
-  const alivePlayers = state.players.filter(p => !p.eliminated_at);
+  const isLobby = state.room?.status === 'lobby';
+  const isRunning = state.room?.status === 'running';
+  const isFinished = state.room?.status === 'finished';
+  const alivePlayers = state.players?.filter(p => !p.eliminated_at) || [];
 
   const getEffectIcon = (type: string) => {
     if (type === 'self_add') return <Zap className="text-arcade-green" size={16} />;
@@ -257,7 +257,7 @@ export default function AdminManage() {
               <div className="flex items-center gap-4 text-xs font-arcade">
                 <div className="flex items-center gap-2 px-3 py-1 border border-arcade-teal/30 rounded bg-arcade-teal/10">
                   <Users size={14} className="text-arcade-teal" />
-                  <span className="text-arcade-cream">ALIVE: {alivePlayers.length}/{state.players.length}</span>
+                  <span className="text-arcade-cream">ALIVE: {alivePlayers.length}/{state.players?.length || 0}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${
@@ -294,11 +294,11 @@ export default function AdminManage() {
                     <h2 className="text-sm font-arcade text-arcade-teal tracking-wider">RITUAL CONTROL</h2>
                   </div>
                   <p className="text-xs text-arcade-cream/60 font-arcade mb-4">
-                    APPRENTICES READY: {state.players.length}
+                    APPRENTICES READY: {state.players?.length || 0}
                   </p>
                   <button
                     onClick={handleStartGame}
-                    disabled={starting || state.players.length < 2}
+                    disabled={starting || (state.players?.length || 0) < 2}
                     className="w-full pixel-box py-3 rounded-lg font-arcade text-xs tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       '--border-color': '#39ff14',
@@ -309,7 +309,7 @@ export default function AdminManage() {
                       {starting ? 'BEGINNING...' : 'BEGIN RITUAL'}
                     </span>
                   </button>
-                  {state.players.length < 2 && (
+                  {(state.players?.length || 0) < 2 && (
                     <div className="mt-2 flex items-center gap-2 text-arcade-red text-[10px] font-arcade">
                       <AlertCircle size={12} />
                       MIN 2 APPRENTICES
@@ -326,16 +326,16 @@ export default function AdminManage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Users size={20} className="text-arcade-purple" />
                   <h2 className="text-sm font-arcade text-arcade-purple tracking-wider">
-                    APPRENTICES ({state.players.length})
+                    APPRENTICES ({state.players?.length || 0})
                   </h2>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto tome-scrollbar">
-                  {state.players.length === 0 ? (
+                  {!state.players || state.players.length === 0 ? (
                     <div className="text-center text-arcade-cream/30 text-xs font-arcade py-4">
                       NO APPRENTICES
                     </div>
                   ) : (
-                    state.players.map((player) => (
+                    state.players?.map((player) => (
                       <div
                         key={player.id}
                         className={`
@@ -361,7 +361,7 @@ export default function AdminManage() {
               </section>
 
               {/* Winner */}
-              {isFinished && state.room.winner_player_id && (
+              {isFinished && state.room?.winner_player_id && (
                 <section className="pixel-box p-6 rounded-lg text-center" style={{
                   '--border-color': '#ffd700',
                   '--glow-color': 'rgba(255, 215, 0, 0.3)'
@@ -371,7 +371,7 @@ export default function AdminManage() {
                     VICTOR
                   </h2>
                   <p className="text-sm font-arcade text-arcade-cream mt-2">
-                    {state.players.find(p => p.id === state.room.winner_player_id)?.name}
+                    {state.players?.find(p => p.id === state.room?.winner_player_id)?.name}
                   </p>
                 </section>
               )}
@@ -488,12 +488,12 @@ export default function AdminManage() {
                   RECENT EVENTS
                 </h2>
                 <div className="space-y-2 max-h-48 overflow-y-auto tome-scrollbar">
-                  {state.events.length === 0 ? (
+                  {!state.events || state.events.length === 0 ? (
                     <div className="text-center text-arcade-cream/30 text-xs font-arcade py-4">
                       NO EVENTS
                     </div>
                   ) : (
-                    state.events.slice(0, 10).map((event) => (
+                    state.events?.slice(0, 10).map((event) => (
                       <div
                         key={event.id}
                         className="flex items-start gap-2 text-xs p-2 bg-black/30 rounded border-l-2 border-arcade-teal/50"
