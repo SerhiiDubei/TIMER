@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Hourglass, Sparkles, Scroll, AlertTriangle, Crown, Flame, Feather, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { RoomState } from '@/lib/types';
@@ -144,6 +145,7 @@ export default function RoomPage() {
           id: Date.now()
         });
         setTimeout(() => setFlash(null), 500);
+        setTimeout(() => setFloatingText(null), 2100); // Clear after animation completes
         setCode('');
         fetchState();
       } else {
@@ -203,16 +205,32 @@ export default function RoomPage() {
 
       <Starfield />
 
-      {/* Flash overlay - only on timer area */}
-      {flash && (
-        <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
-          <div className={`w-[90%] max-w-2xl h-96 rounded-lg ${
-            flash === 'GOLD' ? 'bg-arcade-gold' : 'bg-arcade-red'
-          } opacity-20 blur-3xl animate-pulse`} />
-        </div>
-      )}
+      {/* Flash overlay - framer-motion one-shot */}
+      <AnimatePresence>
+        {flash && (
+          <motion.div
+            initial={{ opacity: 0.5 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+            className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center"
+            style={{ mixBlendMode: 'screen' }}
+          >
+            <div className={`w-[90%] max-w-2xl h-96 rounded-lg ${
+              flash === 'GOLD' ? 'bg-arcade-gold' : 'bg-arcade-red'
+            } blur-3xl`} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <div className={`min-h-screen p-4 md:p-8 relative z-10 ${shake ? 'animate-pulse' : ''}`}>
+      <motion.div
+        animate={shake ? {
+          x: [-8, 8, -8, 8, 0],
+          rotate: [-1, 1, -1, 1, 0]
+        } : {}}
+        transition={{ duration: 0.4 }}
+        className="min-h-screen p-4 md:p-8 relative z-10"
+      >
         <div className="max-w-4xl mx-auto space-y-4">
           {/* Header */}
           <header className="pixel-box p-4 rounded-lg" style={{
@@ -293,18 +311,24 @@ export default function RoomPage() {
           {/* Timer Display */}
           {(isRunning || (isFinished && !iWon)) && !isEliminated && (
             <div className="flex flex-col items-center justify-center min-h-[400px] py-12 relative">
-              {/* Floating Text */}
-              {floatingText && (
-                <div
-                  key={floatingText.id}
-                  className={`absolute top-0 text-6xl font-bold ${floatingText.color} z-20 pointer-events-none animate-float`}
-                  style={{
-                    textShadow: '0 0 20px currentColor, 0 0 40px currentColor'
-                  }}
-                >
-                  {floatingText.text}
-                </div>
-              )}
+              {/* Floating Text - framer-motion */}
+              <AnimatePresence>
+                {floatingText && (
+                  <motion.div
+                    key={floatingText.id}
+                    initial={{ y: 0, opacity: 1, scale: 0.5 }}
+                    animate={{ y: -80, opacity: 0, scale: 1.5 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 2, ease: 'easeOut' }}
+                    className={`absolute top-0 text-6xl font-bold ${floatingText.color} z-20 pointer-events-none`}
+                    style={{
+                      textShadow: '0 0 20px currentColor, 0 0 40px currentColor'
+                    }}
+                  >
+                    {floatingText.text}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Giant Timer */}
               <div 
@@ -459,7 +483,7 @@ export default function RoomPage() {
         </div>
 
         <VersionFooter />
-      </div>
+      </motion.div>
     </>
   );
 }

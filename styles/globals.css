@@ -286,6 +286,42 @@ body {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* CSS Fallback Animations (if framer-motion fails) */
+@keyframes flash-screen {
+  0% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+.flash-animate {
+  animation: flash-screen 0.4s ease-out forwards;
+}
+
+@keyframes shake-fast {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-8px) rotate(-1deg); }
+  50% { transform: translateX(8px) rotate(1deg); }
+  75% { transform: translateX(-8px) rotate(-1deg); }
+}
+
+.shake-animate {
+  animation: shake-fast 0.4s ease-out;
+}
+
+@keyframes float-up-fade {
+  0% { 
+    transform: translateY(0) scale(0.5); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: translateY(-80px) scale(1.5); 
+    opacity: 0; 
+  }
+}
+
+.floating-text {
+  animation: float-up-fade 2s ease-out forwards;
+}
+
 /* Monospace numbers to prevent jumping */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
