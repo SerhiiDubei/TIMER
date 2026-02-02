@@ -47,10 +47,24 @@ export function calculateRemainingTime(
   return Math.max(0, baseSeconds - elapsed + adjustments);
 }
 
-// Format time for display
+// Format time for display (string format)
 export function formatTime(seconds: number): string {
   const mins = Math.floor(Math.abs(seconds) / 60);
   const secs = Math.abs(seconds) % 60;
   const sign = seconds < 0 ? '-' : '';
   return `${sign}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Format time as object for component display
+export function formatTimeObject(seconds: number): { m: number; s: number; ms: number } {
+  const totalSeconds = Math.max(0, Math.floor(seconds));
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  const milliseconds = Math.floor((seconds % 1) * 10); // 0-9 deciseconds
+  
+  return {
+    m: mins,
+    s: secs,
+    ms: milliseconds
+  };
 }

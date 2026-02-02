@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { Hourglass, Sparkles, Scroll, AlertTriangle, Crown, Flame, Feather, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { RoomState } from '@/lib/types';
-import { formatTime, calculateRemainingTime } from '@/lib/utils';
+import { formatTimeObject, calculateRemainingTime } from '@/lib/utils';
 import Starfield from '@/components/Starfield';
 import VersionFooter from '@/components/VersionFooter';
 
@@ -185,7 +185,7 @@ export default function RoomPage() {
     : null;
   const iWon = winner?.id === playerId;
 
-  const { m, s, ms } = formatTime(localRemaining);
+  const { m = 0, s = 0, ms = 0 } = formatTimeObject(localRemaining) || {};
 
   return (
     <>
