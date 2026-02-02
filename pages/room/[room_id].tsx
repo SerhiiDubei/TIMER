@@ -282,49 +282,53 @@ export default function RoomPage() {
 
           {/* Timer Display */}
           {(isRunning || (isFinished && !iWon)) && !isEliminated && (
-            <div className="flex justify-center items-center min-h-[250px] relative">
+            <div className="flex flex-col items-center justify-center min-h-[400px] py-12 relative">
               {/* Floating Text */}
               {floatingText && (
                 <div
                   key={floatingText.id}
-                  className={`absolute top-0 text-5xl font-bold ${floatingText.color} z-20 pointer-events-none animate-float`}
+                  className={`absolute top-0 text-6xl font-bold ${floatingText.color} z-20 pointer-events-none animate-float`}
+                  style={{
+                    textShadow: '0 0 20px currentColor, 0 0 40px currentColor'
+                  }}
                 >
                   {floatingText.text}
                 </div>
               )}
 
-              {/* Crystal Orb */}
-              <div className="pixel-box p-12 rounded-full" style={{
-                '--border-color': localRemaining < 60000 ? '#ff4757' : '#40e0d0',
-                '--glow-color': localRemaining < 60000 ? 'rgba(255, 71, 87, 0.3)' : 'rgba(64, 224, 208, 0.3)'
-              } as React.CSSProperties}>
-                <div 
-                  className="flex items-baseline gap-2 md:gap-4 transition-colors duration-500"
-                  style={{
-                    color: localRemaining < 60000 && localRemaining > 0 ? '#ff4757' : '#40e0d0',
-                    textShadow: localRemaining < 60000 && localRemaining > 0 
-                      ? '0 0 10px #ff4757, 0 0 20px #ff0000' 
-                      : '0 0 10px #40e0d0, 0 0 20px #00d9ff'
-                  }}
-                >
-                  <span className="text-5xl md:text-7xl font-bold tabular-nums">{m}</span>
-                  <span className="text-3xl md:text-5xl opacity-60">:</span>
-                  <span className="text-5xl md:text-7xl font-bold tabular-nums">{s}</span>
-                  <span className="text-3xl md:text-5xl opacity-60">.</span>
-                  <span className="text-3xl md:text-5xl opacity-80 tabular-nums">{ms}</span>
-                </div>
-
-                {/* Adjustments */}
-                {state.my_adjustments !== undefined && state.my_adjustments !== 0 && (
-                  <div className="text-center mt-4">
-                    <span className={`text-sm font-arcade ${
-                      state.my_adjustments > 0 ? 'text-arcade-green' : 'text-arcade-red'
-                    }`}>
-                      ADJUST: {state.my_adjustments > 0 ? '+' : ''}{state.my_adjustments}s
-                    </span>
-                  </div>
-                )}
+              {/* Giant Timer */}
+              <div 
+                className="flex items-center justify-center gap-3 md:gap-6"
+                style={{
+                  fontSize: 'clamp(4rem, 15vw, 12rem)',
+                  fontWeight: 'bold',
+                  fontFamily: 'monospace',
+                  letterSpacing: '0.05em',
+                  color: localRemaining < 60000 && localRemaining > 0 ? '#ff4757' : '#40e0d0',
+                  textShadow: localRemaining < 60000 && localRemaining > 0 
+                    ? '0 0 20px #ff4757, 0 0 40px #ff0000, 0 0 60px #ff4757' 
+                    : '0 0 20px #40e0d0, 0 0 40px #00d9ff, 0 0 60px #40e0d0',
+                  animation: localRemaining < 10000 && localRemaining > 0 ? 'pulse 1s infinite' : 'none'
+                }}
+              >
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{m.toString().padStart(2, '0')}</span>
+                <span style={{ opacity: 0.7 }}>:</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{s.toString().padStart(2, '0')}</span>
+                <span style={{ opacity: 0.5, fontSize: '0.5em' }}>.</span>
+                <span style={{ opacity: 0.8, fontSize: '0.6em', fontVariantNumeric: 'tabular-nums' }}>{ms}</span>
               </div>
+
+              {/* Adjustments */}
+              {state.my_adjustments !== undefined && state.my_adjustments !== 0 && (
+                <div className="text-center mt-6 text-2xl font-bold" style={{
+                  color: state.my_adjustments > 0 ? '#39ff14' : '#ff4757',
+                  textShadow: state.my_adjustments > 0 
+                    ? '0 0 10px #39ff14, 0 0 20px #39ff14' 
+                    : '0 0 10px #ff4757, 0 0 20px #ff4757'
+                }}>
+                  {state.my_adjustments > 0 ? '+' : ''}{state.my_adjustments}s
+                </div>
+              )}
             </div>
           )}
 
