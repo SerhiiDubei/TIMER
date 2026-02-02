@@ -503,8 +503,20 @@ export default function AdminManage() {
                           {event.type === 'player_joined' && `${event.payload?.name || 'Player'} joined`}
                           {event.type === 'game_started' && 'Ritual begun'}
                           {event.type === 'player_eliminated' && `${event.payload?.name || 'Player'} eliminated`}
-                          {event.type === 'code_used' && `Code used: ${getEffectLabel(event.payload?.effect_type)}`}
-                          {event.type === 'time_adjust' && `Time adjusted`}
+                          {event.type === 'code_used' && (
+                            <>
+                              {event.payload?.player_name || 'Player'} used{' '}
+                              <span className={
+                                event.payload?.effect_type === 'self_add' ? 'text-arcade-green' :
+                                event.payload?.effect_type === 'self_subtract' ? 'text-arcade-red' :
+                                'text-arcade-gold'
+                              }>
+                                {event.payload?.effect_type === 'self_add' && `+${event.payload?.seconds || 0}s`}
+                                {event.payload?.effect_type === 'self_subtract' && `${event.payload?.seconds || 0}s`}
+                                {event.payload?.effect_type === 'team_add' && 'TEAM GIFT'}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))

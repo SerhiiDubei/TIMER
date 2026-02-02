@@ -123,14 +123,19 @@ export default async function handler(
 
     if (updateError) throw updateError;
 
-    // Log code_used event
+    // Log code_used event with player name
     const { data: codeUsedEvent } = await supabase
       .from('events')
       .insert({
         room_id,
         type: 'code_used',
         actor_player_id: player_id,
-        payload: { code_id: matchedCode.id, effect_type: matchedCode.effect_type }
+        payload: { 
+          code_id: matchedCode.id, 
+          effect_type: matchedCode.effect_type,
+          player_name: player.name,
+          seconds: matchedCode.payload.seconds
+        }
       })
       .select()
       .single();

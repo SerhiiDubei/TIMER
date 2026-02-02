@@ -203,11 +203,13 @@ export default function RoomPage() {
 
       <Starfield />
 
-      {/* Flash overlay */}
+      {/* Flash overlay - only on timer area */}
       {flash && (
-        <div className={`fixed inset-0 pointer-events-none z-40 mix-blend-screen ${
-          flash === 'GOLD' ? 'bg-arcade-gold' : 'bg-arcade-red'
-        } animate-pulse opacity-40`} />
+        <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
+          <div className={`w-[90%] max-w-2xl h-96 rounded-lg ${
+            flash === 'GOLD' ? 'bg-arcade-gold' : 'bg-arcade-red'
+          } opacity-20 blur-3xl animate-pulse`} />
+        </div>
       )}
 
       <div className={`min-h-screen p-4 md:p-8 relative z-10 ${shake ? 'animate-pulse' : ''}`}>
@@ -375,16 +377,16 @@ export default function RoomPage() {
           )}
 
           {/* Chronicle */}
-          <div className="pixel-box p-4 rounded-lg h-64 flex flex-col" style={{
+          <div className="pixel-box p-4 rounded-lg h-64 flex flex-col overflow-hidden" style={{
             '--border-color': '#e056fd',
             '--glow-color': 'rgba(224, 86, 253, 0.2)'
           } as React.CSSProperties}>
             <div className="flex items-center gap-2 mb-4 border-b-2 border-arcade-purple/30 pb-2">
-              <Scroll size={16} className="text-arcade-purple" />
-              <span className="text-xs text-arcade-purple tracking-widest font-arcade">CHRONICLE</span>
+              <Scroll size={16} className="text-arcade-purple flex-shrink-0" />
+              <span className="text-xs text-arcade-purple tracking-widest font-arcade truncate">CHRONICLE</span>
             </div>
 
-            <div className="flex-1 overflow-y-auto tome-scrollbar flex flex-col gap-3 pr-2">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden tome-scrollbar flex flex-col gap-3 pr-2">
               {!state.recent_events || state.recent_events.length === 0 ? (
                 <div className="text-arcade-cream/50 text-center mt-10 italic text-xs font-arcade">
                   The pages are empty...
@@ -399,8 +401,20 @@ export default function RoomPage() {
                       {event.type === 'player_joined' && `${event.payload?.name} joined`}
                       {event.type === 'game_started' && 'Ritual begun'}
                       {event.type === 'player_eliminated' && `💀 ${event.payload?.name} eliminated`}
-                      {event.type === 'code_used' && `✨ Code used`}
-                      {event.type === 'time_adjust' && `⚡ Time adjusted`}
+                      {event.type === 'code_used' && (
+                        <>
+                          {event.payload?.player_name || 'Player'} used{' '}
+                          <span className={
+                            event.payload?.effect_type === 'self_add' ? 'text-arcade-green' :
+                            event.payload?.effect_type === 'self_subtract' ? 'text-arcade-red' :
+                            'text-arcade-gold'
+                          }>
+                            {event.payload?.effect_type === 'self_add' && `+${event.payload?.seconds || 0}s`}
+                            {event.payload?.effect_type === 'self_subtract' && `${event.payload?.seconds || 0}s`}
+                            {event.payload?.effect_type === 'team_add' && 'TEAM GIFT'}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))
@@ -410,17 +424,17 @@ export default function RoomPage() {
           </div>
 
           {/* Players */}
-          <div className="pixel-box p-4 rounded-lg" style={{
+          <div className="pixel-box p-4 rounded-lg overflow-hidden" style={{
             '--border-color': '#40e0d0',
             '--glow-color': 'rgba(64, 224, 208, 0.2)'
           } as React.CSSProperties}>
             <div className="flex items-center gap-2 mb-3">
-              <Users size={16} className="text-arcade-teal" />
-              <span className="text-xs text-arcade-teal tracking-widest font-arcade">
+              <Users size={16} className="text-arcade-teal flex-shrink-0" />
+              <span className="text-xs text-arcade-teal tracking-widest font-arcade truncate">
                 APPRENTICES ({state.players?.filter(p => !p.eliminated_at).length || 0}/{state.players?.length || 0})
               </span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 overflow-hidden">
               {state.players?.map((player) => (
                 <div
                   key={player.id}
