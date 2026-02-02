@@ -298,11 +298,15 @@ export default function RoomPage() {
                 '--border-color': localRemaining < 60000 ? '#ff4757' : '#40e0d0',
                 '--glow-color': localRemaining < 60000 ? 'rgba(255, 71, 87, 0.3)' : 'rgba(64, 224, 208, 0.3)'
               } as React.CSSProperties}>
-                <div className={`flex items-baseline gap-2 md:gap-4 transition-colors duration-500 ${
-                  localRemaining < 60000 && localRemaining > 0 
-                    ? 'text-arcade-red text-glow-red animate-pulse' 
-                    : 'text-arcade-teal text-glow-teal'
-                }`}>
+                <div 
+                  className="flex items-baseline gap-2 md:gap-4 transition-colors duration-500"
+                  style={{
+                    color: localRemaining < 60000 && localRemaining > 0 ? '#ff4757' : '#40e0d0',
+                    textShadow: localRemaining < 60000 && localRemaining > 0 
+                      ? '0 0 10px #ff4757, 0 0 20px #ff0000' 
+                      : '0 0 10px #40e0d0, 0 0 20px #00d9ff'
+                  }}
+                >
                   <span className="text-5xl md:text-7xl font-bold tabular-nums">{m}</span>
                   <span className="text-3xl md:text-5xl opacity-60">:</span>
                   <span className="text-5xl md:text-7xl font-bold tabular-nums">{s}</span>
