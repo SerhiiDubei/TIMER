@@ -298,12 +298,11 @@ export default function RoomPage() {
 
               {/* Giant Timer */}
               <div 
-                className="flex items-center justify-center gap-3 md:gap-6"
+                className="flex items-center justify-center gap-3 md:gap-6 font-arcade"
                 style={{
-                  fontSize: 'clamp(4rem, 15vw, 12rem)',
+                  fontSize: 'clamp(3rem, 12vw, 10rem)',
                   fontWeight: 'bold',
-                  fontFamily: 'monospace',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.1em',
                   color: localRemaining < 60000 && localRemaining > 0 ? '#ff4757' : '#40e0d0',
                   textShadow: localRemaining < 60000 && localRemaining > 0 
                     ? '0 0 20px #ff4757, 0 0 40px #ff0000, 0 0 60px #ff4757' 
@@ -314,8 +313,8 @@ export default function RoomPage() {
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{m.toString().padStart(2, '0')}</span>
                 <span style={{ opacity: 0.7 }}>:</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{s.toString().padStart(2, '0')}</span>
-                <span style={{ opacity: 0.5, fontSize: '0.5em' }}>.</span>
-                <span style={{ opacity: 0.8, fontSize: '0.6em', fontVariantNumeric: 'tabular-nums' }}>{ms}</span>
+                <span style={{ opacity: 0.6, fontSize: '0.7em' }}>.</span>
+                <span style={{ opacity: 0.9, fontSize: '0.85em', fontVariantNumeric: 'tabular-nums' }}>{ms}</span>
               </div>
 
               {/* Adjustments */}
