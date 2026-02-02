@@ -20,6 +20,7 @@ export default function RoomPage() {
   const [redeeming, setRedeeming] = useState(false);
   const [message, setMessage] = useState('');
   const [localRemaining, setLocalRemaining] = useState<number>(0);
+  const [deciseconds, setDeciseconds] = useState<number>(0);
   const [shake, setShake] = useState(false);
   const [flash, setFlash] = useState<'GOLD' | 'RED' | null>(null);
   const [floatingText, setFloatingText] = useState<{text: string; color: string; id: number} | null>(null);
@@ -65,8 +66,9 @@ export default function RoomPage() {
     return () => clearInterval(interval);
   }, [fetchState]);
 
+  // Local timer countdown (100ms for smooth deciseconds)
   useEffect(() => {
-    if (!state?.room.started_at) return;
+    if (!state?.room?.started_at) return;
 
     const interval = setInterval(() => {
       const remaining = calculateRemainingTime(
@@ -75,6 +77,11 @@ export default function RoomPage() {
         state.my_adjustments || 0
       );
       setLocalRemaining(remaining);
+      
+      // Calculate deciseconds (0-9) from current milliseconds
+      const now = Date.now();
+      const ds = Math.floor((now % 1000) / 100);
+      setDeciseconds(ds);
     }, 100);
 
     return () => clearInterval(interval);
@@ -185,7 +192,8 @@ export default function RoomPage() {
     : null;
   const iWon = winner?.id === playerId;
 
-  const { m = 0, s = 0, ms = 0 } = formatTimeObject(localRemaining) || {};
+  const { m = 0, s = 0 } = formatTimeObject(localRemaining) || {};
+  const ms = deciseconds; // Use real-time deciseconds 0-9
 
   return (
     <>
@@ -298,9 +306,9 @@ export default function RoomPage() {
 
               {/* Giant Timer */}
               <div 
-                className="flex items-center justify-center gap-3 md:gap-6 font-arcade"
+                className="flex items-center justify-center gap-2 md:gap-4 font-arcade"
                 style={{
-                  fontSize: 'clamp(3rem, 12vw, 10rem)',
+                  fontSize: 'clamp(2rem, 8vw, 6rem)',
                   fontWeight: 'bold',
                   letterSpacing: '0.1em',
                   color: localRemaining < 60000 && localRemaining > 0 ? '#ff4757' : '#40e0d0',
