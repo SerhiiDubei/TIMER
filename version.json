@@ -1,6 +1,6 @@
 {
-  "version": "2.1.0",
-  "buildTime": "2026-02-01T20:00:00Z",
+  "version": "2.1.1",
+  "buildTime": "2026-02-02T09:15:00Z",
   "features": [
     "🎮 PIXEL ARCADE UI - Press Start 2P font",
     "✨ Starfield animated background",
@@ -10,6 +10,7 @@
     "📜 Chronicle event system",
     "🛡️ Archmage admin panel redesign",
     "⏰ 1-3s elimination delay (optimized)",
-    "🎯 Database-driven auto-elimination"
+    "🎯 Database-driven auto-elimination",
+    "✅ Fixed state.players undefined crash"
   ]
 }
