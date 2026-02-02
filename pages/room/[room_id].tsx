@@ -1,9 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { Hourglass, Sparkles, Scroll, AlertTriangle, Crown, Flame, Feather, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { RoomState, Player, Event } from '@/lib/types';
+import { RoomState } from '@/lib/types';
 import { formatTime, calculateRemainingTime } from '@/lib/utils';
+import Starfield from '@/components/Starfield';
 import VersionFooter from '@/components/VersionFooter';
 
 export default function RoomPage() {
@@ -18,15 +20,17 @@ export default function RoomPage() {
   const [redeeming, setRedeeming] = useState(false);
   const [message, setMessage] = useState('');
   const [localRemaining, setLocalRemaining] = useState<number>(0);
+  const [shake, setShake] = useState(false);
+  const [flash, setFlash] = useState<'GOLD' | 'RED' | null>(null);
+  const [floatingText, setFloatingText] = useState<{text: string; color: string; id: number} | null>(null);
+  
+  const logsEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch room state
   const fetchState = useCallback(async () => {
     if (!room_id || typeof room_id !== 'string') return;
 
     try {
-      const response = await fetch(
-        `/api/rooms/${room_id}/state?player_id=${playerId}`
-      );
+      const response = await fetch(`/api/rooms/${room_id}/state?player_id=${playerId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -42,7 +46,6 @@ export default function RoomPage() {
     }
   }, [room_id, playerId]);
 
-  // Initialize
   useEffect(() => {
     const storedPlayerId = sessionStorage.getItem('player_id');
     const storedPlayerName = sessionStorage.getItem('player_name');
@@ -57,13 +60,11 @@ export default function RoomPage() {
     fetchState();
   }, [room_id, fetchState, router]);
 
-  // Poll for updates
   useEffect(() => {
     const interval = setInterval(fetchState, 2000);
     return () => clearInterval(interval);
   }, [fetchState]);
 
-  // Local timer countdown
   useEffect(() => {
     if (!state?.room.started_at) return;
 
@@ -79,7 +80,6 @@ export default function RoomPage() {
     return () => clearInterval(interval);
   }, [state]);
 
-  // Realtime subscriptions
   useEffect(() => {
     if (!room_id || typeof room_id !== 'string') return;
 
@@ -104,9 +104,13 @@ export default function RoomPage() {
     };
   }, [room_id, fetchState]);
 
-  const handleRedeem = async (e: React.FormEvent) => {
+  useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [state?.events]);
+
+  const handleRedeemCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code.trim()) return;
+    if (!code.trim() || redeeming) return;
 
     setRedeeming(true);
     setMessage('');
@@ -118,18 +122,27 @@ export default function RoomPage() {
         body: JSON.stringify({
           room_id,
           player_id: playerId,
-          code: code.toUpperCase()
+          code: code.trim().toUpperCase()
         })
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        setMessage('✅ Code redeemed successfully!');
+      if (response.ok) {
+        setMessage(`✨ RUNE ACTIVATED!`);
+        setFlash('GOLD');
+        setFloatingText({
+          text: data.delta_seconds > 0 ? `+${data.delta_seconds}s` : `${data.delta_seconds}s`,
+          color: data.delta_seconds > 0 ? 'text-arcade-gold' : 'text-arcade-red',
+          id: Date.now()
+        });
+        setTimeout(() => setFlash(null), 500);
         setCode('');
         fetchState();
       } else {
-        setMessage(`❌ ${data.message}`);
+        setMessage(`❌ ${data.error}`);
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
       }
     } catch (error: any) {
       setMessage(`❌ ${error.message}`);
@@ -141,218 +154,281 @@ export default function RoomPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
+      <>
+        <Starfield />
+        <div className="min-h-screen flex items-center justify-center relative z-10">
+          <div className="text-arcade-cream font-arcade text-sm animate-pulse">LOADING...</div>
+        </div>
+      </>
     );
   }
 
   if (!state) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-white text-xl">Room not found</div>
-      </div>
+      <>
+        <Starfield />
+        <div className="min-h-screen flex items-center justify-center relative z-10">
+          <div className="text-arcade-red font-arcade text-sm">RITUAL NOT FOUND</div>
+        </div>
+      </>
     );
   }
 
-  const myPlayer = state.players.find(p => p.id === playerId);
-  const isEliminated = myPlayer?.eliminated_at !== null;
   const isLobby = state.room.status === 'lobby';
   const isRunning = state.room.status === 'running';
   const isFinished = state.room.status === 'finished';
-  const winner = state.players.find(p => p.id === state.room.winner_player_id);
+  const myPlayer = state.players.find(p => p.id === playerId);
+  const isEliminated = myPlayer?.eliminated_at != null;
   const timeIsUp = localRemaining <= 0 && isRunning && !isEliminated;
+  const winner = isFinished && state.room.winner_player_id 
+    ? state.players.find(p => p.id === state.room.winner_player_id)
+    : null;
+  const iWon = winner?.id === playerId;
+
+  const { m, s, ms } = formatTime(localRemaining);
 
   return (
     <>
       <Head>
-        <title>{isLobby ? 'Lobby' : 'Game'} - {state.room.room_code}</title>
+        <title>{state.room.room_name || `Room ${state.room.room_code}`}</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
-        <div className="max-w-4xl mx-auto">
+      <Starfield />
+
+      {/* Flash overlay */}
+      {flash && (
+        <div className={`fixed inset-0 pointer-events-none z-40 mix-blend-screen ${
+          flash === 'GOLD' ? 'bg-arcade-gold' : 'bg-arcade-red'
+        } animate-pulse opacity-40`} />
+      )}
+
+      <div className={`min-h-screen p-4 md:p-8 relative z-10 ${shake ? 'animate-pulse' : ''}`}>
+        <div className="max-w-4xl mx-auto space-y-4">
           {/* Header */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-4 border border-white/20">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  {state.room.room_name || `Room: ${state.room.room_code}`}
+          <header className="pixel-box p-4 rounded-lg" style={{
+            '--border-color': '#ffd700',
+            '--glow-color': 'rgba(255, 215, 0, 0.2)'
+          } as React.CSSProperties}>
+            <div className="flex items-center gap-3 text-arcade-gold">
+              <Hourglass size={24} className="animate-spin-slow" />
+              <div className="flex-1">
+                <h1 className="text-sm md:text-lg font-arcade tracking-widest text-glow-gold">
+                  ARCANE HOURGLASS
                 </h1>
-                <p className="text-white/60">
-                  {playerName} {isEliminated && '(Eliminated)'}
-                </p>
+                {state.room.room_name && (
+                  <p className="text-xs text-arcade-teal mt-1">"{state.room.room_name}"</p>
+                )}
               </div>
-              <div className="text-right">
-                <div className="text-white/60 text-sm">Status</div>
-                <div className="text-white font-semibold capitalize">
-                  {state.room.status}
-                </div>
+              <div className="flex items-center gap-2 text-xs">
+                <div className={`w-2 h-2 rounded-full ${
+                  isRunning ? 'bg-arcade-teal animate-pulse' : 'bg-arcade-red'
+                }`} />
+                <span className="text-arcade-cream">{isRunning ? 'ACTIVE' : isLobby ? 'WAITING' : 'ENDED'}</span>
               </div>
             </div>
-          </div>
+          </header>
 
-          {/* Lobby Screen */}
+          {/* Waiting for Start */}
           {isLobby && (
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center">
-              <h2 className="text-3xl font-bold text-white mb-4">
-                ⏳ Waiting for game to start...
-              </h2>
-              <p className="text-white/60 mb-6">
-                {state.players.length} player{state.players.length !== 1 ? 's' : ''} in lobby
+            <div className="pixel-box p-6 rounded-lg text-center" style={{
+              '--border-color': '#40e0d0',
+              '--glow-color': 'rgba(64, 224, 208, 0.2)'
+            } as React.CSSProperties}>
+              <Sparkles size={32} className="text-arcade-teal mx-auto mb-3 animate-float" />
+              <h2 className="text-lg font-arcade text-arcade-teal mb-2">WAITING FOR ARCHMAGE...</h2>
+              <p className="text-xs text-arcade-cream/60 font-arcade">
+                PLAYERS: {state.players.length}
               </p>
-              <div className="text-white/80 mb-4">
-                Starting time: {Math.floor(state.room.base_seconds / 60)} minutes
+            </div>
+          )}
+
+          {/* Eliminated Screen */}
+          {isEliminated && (
+            <div className="pixel-box p-6 rounded-lg text-center" style={{
+              '--border-color': '#ff4757',
+              '--glow-color': 'rgba(255, 71, 87, 0.3)'
+            } as React.CSSProperties}>
+              <div className="text-5xl mb-3">💀</div>
+              <h2 className="text-2xl font-arcade text-arcade-red text-glow-red mb-2">ELIMINATED</h2>
+              <p className="text-xs text-arcade-cream/60 font-arcade">YOUR RITUAL HAS FAILED</p>
+            </div>
+          )}
+
+          {/* Winner Screen */}
+          {isFinished && iWon && (
+            <div className="pixel-box p-8 rounded-lg text-center" style={{
+              '--border-color': '#ffd700',
+              '--glow-color': 'rgba(255, 215, 0, 0.4)'
+            } as React.CSSProperties}>
+              <Crown size={48} className="text-arcade-gold mx-auto mb-4 animate-float" />
+              <h2 className="text-3xl font-arcade text-arcade-gold text-glow-gold mb-2">VICTORY!</h2>
+              <p className="text-sm text-arcade-cream font-arcade">YOU ARE THE LAST SURVIVOR</p>
+            </div>
+          )}
+
+          {/* Time's Up Warning */}
+          {timeIsUp && !isEliminated && (
+            <div className="pixel-box p-4 rounded-lg text-center glitch-container" style={{
+              '--border-color': '#ff4757',
+              '--glow-color': 'rgba(255, 71, 87, 0.4)'
+            } as React.CSSProperties}>
+              <div className="flex items-center justify-center gap-3 text-arcade-red glitch-text">
+                <AlertTriangle size={24} />
+                <span className="font-arcade text-sm">TIME IS UP! AWAITING ELIMINATION...</span>
+                <AlertTriangle size={24} />
               </div>
-              {state.players.length < 2 && (
-                <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-yellow-200 text-sm">
-                  ⚠️ Need at least 2 players to start
-                </div>
-              )}
             </div>
           )}
 
-          {/* Game Finished Screen */}
-          {isFinished && (
-            <div className="bg-gradient-to-br from-yellow-500/20 to-purple-500/20 backdrop-blur-lg rounded-2xl p-8 border border-yellow-500/50 text-center mb-4">
-              <div className="text-6xl mb-4">🏆</div>
-              <h2 className="text-4xl font-bold text-white mb-4">
-                Game Over!
-              </h2>
-              {winner && (
-                <div className="text-2xl text-yellow-300 font-semibold">
-                  {winner.id === playerId ? 'YOU WIN!' : `${winner.name} wins!`}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Game Screen */}
-          {isRunning && !isFinished && (
-            <>
-              {/* Time Up Warning */}
-              {timeIsUp && (
-                <div className="bg-red-500/30 backdrop-blur-lg rounded-2xl p-6 mb-4 border-2 border-red-500 text-center animate-pulse">
-                  <div className="text-5xl mb-2">⏰</div>
-                  <div className="text-2xl font-bold text-white mb-2">
-                    Your time is up!
-                  </div>
-                  <div className="text-red-200">
-                    Waiting for elimination check...
-                  </div>
+          {/* Timer Display */}
+          {(isRunning || (isFinished && !iWon)) && !isEliminated && (
+            <div className="flex justify-center items-center min-h-[250px] relative">
+              {/* Floating Text */}
+              {floatingText && (
+                <div
+                  key={floatingText.id}
+                  className={`absolute top-0 text-5xl font-bold ${floatingText.color} z-20 pointer-events-none animate-float`}
+                >
+                  {floatingText.text}
                 </div>
               )}
 
-              {/* Timer */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mb-4 border border-white/20 text-center">
-                <div className="text-white/60 text-sm mb-2">Your Time Remaining</div>
-                <div className={`text-7xl font-bold tabular-nums transition-colors duration-300 ${
-                  localRemaining <= 0 ? 'text-red-500 animate-pulse' :
-                  localRemaining <= 60 ? 'text-red-400 animate-pulse' :
-                  localRemaining <= 180 ? 'text-yellow-300' :
-                  'text-white'
-                }`} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {formatTime(Math.max(0, localRemaining))}
+              {/* Crystal Orb */}
+              <div className="pixel-box p-12 rounded-full" style={{
+                '--border-color': localRemaining < 60000 ? '#ff4757' : '#40e0d0',
+                '--glow-color': localRemaining < 60000 ? 'rgba(255, 71, 87, 0.3)' : 'rgba(64, 224, 208, 0.3)'
+              } as React.CSSProperties}>
+                <div className={`flex items-baseline gap-2 md:gap-4 transition-colors duration-500 ${
+                  localRemaining < 60000 && localRemaining > 0 
+                    ? 'text-arcade-red text-glow-red animate-pulse' 
+                    : 'text-arcade-teal text-glow-teal'
+                }`}>
+                  <span className="text-5xl md:text-7xl font-bold tabular-nums">{m}</span>
+                  <span className="text-3xl md:text-5xl opacity-60">:</span>
+                  <span className="text-5xl md:text-7xl font-bold tabular-nums">{s}</span>
+                  <span className="text-3xl md:text-5xl opacity-60">.</span>
+                  <span className="text-3xl md:text-5xl opacity-80 tabular-nums">{ms}</span>
                 </div>
+
+                {/* Adjustments */}
                 {state.my_adjustments !== undefined && state.my_adjustments !== 0 && (
-                  <div className="text-white/60 text-sm mt-2">
-                    Adjustments: {state.my_adjustments > 0 ? '+' : ''}{state.my_adjustments}s
+                  <div className="text-center mt-4">
+                    <span className={`text-sm font-arcade ${
+                      state.my_adjustments > 0 ? 'text-arcade-green' : 'text-arcade-red'
+                    }`}>
+                      ADJUST: {state.my_adjustments > 0 ? '+' : ''}{state.my_adjustments}s
+                    </span>
                   </div>
                 )}
               </div>
-
-              {/* Code Input */}
-              {!isEliminated && (
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-4 border border-white/20">
-                  <form onSubmit={handleRedeem} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.toUpperCase())}
-                      placeholder="Enter code (e.g. ABC-123)"
-                      className="flex-1 px-4 py-3 bg-white/20 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 uppercase"
-                      disabled={redeeming}
-                    />
-                    <button
-                      type="submit"
-                      disabled={redeeming || !code.trim()}
-                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 text-white font-semibold rounded-lg transition-colors"
-                    >
-                      {redeeming ? '...' : 'Redeem'}
-                    </button>
-                  </form>
-                  {message && (
-                    <div className="mt-3 text-center text-white">
-                      {message}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {isEliminated && (
-                <div className="bg-red-500/20 border border-red-500/50 rounded-2xl p-6 mb-4 text-center">
-                  <div className="text-3xl mb-2">💀</div>
-                  <div className="text-white font-semibold text-xl">You are eliminated!</div>
-                  <div className="text-white/60 text-sm mt-1">Time ran out</div>
-                </div>
-              )}
-            </>
+            </div>
           )}
 
-          {/* Players List */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-            <h3 className="text-white font-semibold mb-4">
-              Players ({state.players.length})
-            </h3>
-            <div className="space-y-2">
-              {state.players.map((player: Player) => (
+          {/* Code Input */}
+          {isRunning && !isEliminated && (
+            <form onSubmit={handleRedeemCode} className="relative">
+              <div className="pixel-box p-3 rounded-lg flex items-center gap-3" style={{
+                '--border-color': message.includes('❌') ? '#ff4757' : '#40e0d0',
+                '--glow-color': message.includes('❌') ? 'rgba(255, 71, 87, 0.2)' : 'rgba(64, 224, 208, 0.2)'
+              } as React.CSSProperties}>
+                <Feather size={20} className="text-arcade-teal animate-bounce" />
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="ENTER RUNE CODE..."
+                  className="flex-1 bg-transparent border-none outline-none text-arcade-cream placeholder-arcade-cream/30 font-arcade uppercase tracking-wider text-sm"
+                  autoComplete="off"
+                />
+                <button
+                  type="submit"
+                  disabled={!code || redeeming}
+                  className="p-2 hover:text-arcade-gold disabled:opacity-30 text-arcade-cream transition-colors"
+                >
+                  <Flame size={20} />
+                </button>
+              </div>
+
+              {message && (
+                <div className={`absolute -top-10 left-0 font-arcade text-xs p-2 rounded ${
+                  message.includes('❌') ? 'text-arcade-red bg-black/80 border border-arcade-red' : 'text-arcade-green bg-black/80 border border-arcade-green'
+                }`}>
+                  {message}
+                </div>
+              )}
+            </form>
+          )}
+
+          {/* Chronicle */}
+          <div className="pixel-box p-4 rounded-lg h-64 flex flex-col" style={{
+            '--border-color': '#e056fd',
+            '--glow-color': 'rgba(224, 86, 253, 0.2)'
+          } as React.CSSProperties}>
+            <div className="flex items-center gap-2 mb-4 border-b-2 border-arcade-purple/30 pb-2">
+              <Scroll size={16} className="text-arcade-purple" />
+              <span className="text-xs text-arcade-purple tracking-widest font-arcade">CHRONICLE</span>
+            </div>
+
+            <div className="flex-1 overflow-y-auto tome-scrollbar flex flex-col gap-3 pr-2">
+              {state.events.length === 0 ? (
+                <div className="text-arcade-cream/50 text-center mt-10 italic text-xs font-arcade">
+                  The pages are empty...
+                </div>
+              ) : (
+                state.events.slice(0, 20).map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex items-start gap-3 text-xs p-3 rounded bg-black/50 border-l-4 border-arcade-purple/50"
+                  >
+                    <div className="flex-1 text-arcade-cream/80 font-arcade text-[10px] leading-relaxed">
+                      {event.type === 'player_joined' && `${event.payload?.name} joined`}
+                      {event.type === 'game_started' && 'Ritual begun'}
+                      {event.type === 'player_eliminated' && `💀 ${event.payload?.name} eliminated`}
+                      {event.type === 'code_used' && `✨ Code used`}
+                      {event.type === 'time_adjust' && `⚡ Time adjusted`}
+                    </div>
+                  </div>
+                ))
+              )}
+              <div ref={logsEndRef} />
+            </div>
+          </div>
+
+          {/* Players */}
+          <div className="pixel-box p-4 rounded-lg" style={{
+            '--border-color': '#40e0d0',
+            '--glow-color': 'rgba(64, 224, 208, 0.2)'
+          } as React.CSSProperties}>
+            <div className="flex items-center gap-2 mb-3">
+              <Users size={16} className="text-arcade-teal" />
+              <span className="text-xs text-arcade-teal tracking-widest font-arcade">
+                APPRENTICES ({state.players.filter(p => !p.eliminated_at).length}/{state.players.length})
+              </span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {state.players.map((player) => (
                 <div
                   key={player.id}
-                  className={`flex justify-between items-center p-3 rounded-lg ${
-                    player.eliminated_at
-                      ? 'bg-red-500/10 border border-red-500/30'
-                      : 'bg-white/5 border border-white/10'
+                  className={`flex items-center gap-2 p-2 rounded bg-black/30 border ${
+                    player.eliminated_at 
+                      ? 'border-arcade-red/30 opacity-50' 
+                      : 'border-arcade-green/30'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-white font-medium">{player.name}</span>
-                    {player.id === playerId && (
-                      <span className="text-xs text-purple-300">(You)</span>
-                    )}
-                  </div>
-                  <div>
-                    {player.eliminated_at ? (
-                      <span className="text-red-300 text-sm">❌ Out</span>
-                    ) : (
-                      <span className="text-green-300 text-sm">✓ Alive</span>
-                    )}
-                  </div>
+                  <div className={`w-2 h-2 rounded-full ${
+                    player.eliminated_at ? 'bg-arcade-red' : 'bg-arcade-green animate-pulse'
+                  }`} />
+                  <span className={`text-xs font-arcade truncate ${
+                    player.id === playerId ? 'text-arcade-gold' : 'text-arcade-cream'
+                  }`}>
+                    {player.name}
+                  </span>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Recent Events */}
-          {state.recent_events && state.recent_events.length > 0 && (
-            <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mt-4 border border-white/20">
-              <h3 className="text-white font-semibold mb-4">Recent Activity</h3>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {state.recent_events.slice(0, 5).map((event: Event) => (
-                  <div
-                    key={event.id}
-                    className="text-white/70 text-sm p-2 bg-white/5 rounded"
-                  >
-                    {event.type === 'game_started' && '🎮 Game started!'}
-                    {event.type === 'player_joined' && `👋 ${event.payload?.name} joined`}
-                    {event.type === 'code_used' && '🎫 Code redeemed'}
-                    {event.type === 'time_adjust' && `⏱️ Time adjusted (${event.time_delta_seconds > 0 ? '+' : ''}${event.time_delta_seconds}s)`}
-                    {event.type === 'player_eliminated' && '💀 Player eliminated'}
-                    {event.type === 'game_finished' && '🏆 Game finished!'}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
+
         <VersionFooter />
       </div>
     </>

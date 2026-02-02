@@ -1,14 +1,15 @@
 {
-  "version": "2.0.2",
-  "buildTime": "2026-02-01T19:35:00Z",
+  "version": "2.1.0",
+  "buildTime": "2026-02-01T20:00:00Z",
   "features": [
-    "✅ Database-driven eliminations WORKING!",
-    "✅ Fixed auto_eliminate_players SQL",
-    "✅ Polling every 2s (responsive elimination)",
-    "✅ UI updates every 1s",
-    "Custom room names",
-    "Minimum 2 players to start",
-    "Winner detection",
-    "Timer animation fixed"
+    "🎮 PIXEL ARCADE UI - Press Start 2P font",
+    "✨ Starfield animated background",
+    "🎨 Magical glowing borders & effects",
+    "⚡ Glitch animations for elimination",
+    "🔮 Crystal orb timer display",
+    "📜 Chronicle event system",
+    "🛡️ Archmage admin panel redesign",
+    "⏰ 1-3s elimination delay (optimized)",
+    "🎯 Database-driven auto-elimination"
   ]
 }
