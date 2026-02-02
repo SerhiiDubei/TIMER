@@ -385,12 +385,12 @@ export default function RoomPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto tome-scrollbar flex flex-col gap-3 pr-2">
-              {!state.events || state.events.length === 0 ? (
+              {!state.recent_events || state.recent_events.length === 0 ? (
                 <div className="text-arcade-cream/50 text-center mt-10 italic text-xs font-arcade">
                   The pages are empty...
                 </div>
               ) : (
-                state.events.slice(0, 20).map((event) => (
+                state.recent_events.slice(0, 20).map((event) => (
                   <div
                     key={event.id}
                     className="flex items-start gap-3 text-xs p-3 rounded bg-black/50 border-l-4 border-arcade-purple/50"

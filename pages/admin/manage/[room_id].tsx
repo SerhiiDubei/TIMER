@@ -488,12 +488,12 @@ export default function AdminManage() {
                   RECENT EVENTS
                 </h2>
                 <div className="space-y-2 max-h-48 overflow-y-auto tome-scrollbar">
-                  {!state.events || state.events.length === 0 ? (
+                  {!state.recent_events || state.recent_events.length === 0 ? (
                     <div className="text-center text-arcade-cream/30 text-xs font-arcade py-4">
                       NO EVENTS
                     </div>
                   ) : (
-                    state.events?.slice(0, 10).map((event) => (
+                    state.recent_events?.slice(0, 10).map((event) => (
                       <div
                         key={event.id}
                         className="flex items-start gap-2 text-xs p-2 bg-black/30 rounded border-l-2 border-arcade-teal/50"
