@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Head from 'head';
+import Head from 'next/head';
 import { Gamepad2, Users, Shield, Sparkles } from 'lucide-react';
 import Starfield from '@/components/Starfield';
 import VersionFooter from '@/components/VersionFooter';
