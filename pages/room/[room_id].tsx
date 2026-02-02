@@ -174,14 +174,14 @@ export default function RoomPage() {
     );
   }
 
-  const isLobby = state.room.status === 'lobby';
-  const isRunning = state.room.status === 'running';
-  const isFinished = state.room.status === 'finished';
-  const myPlayer = state.players.find(p => p.id === playerId);
+  const isLobby = state.room?.status === 'lobby';
+  const isRunning = state.room?.status === 'running';
+  const isFinished = state.room?.status === 'finished';
+  const myPlayer = state.players?.find(p => p.id === playerId);
   const isEliminated = myPlayer?.eliminated_at != null;
   const timeIsUp = localRemaining <= 0 && isRunning && !isEliminated;
-  const winner = isFinished && state.room.winner_player_id 
-    ? state.players.find(p => p.id === state.room.winner_player_id)
+  const winner = isFinished && state.room?.winner_player_id 
+    ? state.players?.find(p => p.id === state.room.winner_player_id)
     : null;
   const iWon = winner?.id === playerId;
 
@@ -237,7 +237,7 @@ export default function RoomPage() {
               <Sparkles size={32} className="text-arcade-teal mx-auto mb-3 animate-float" />
               <h2 className="text-lg font-arcade text-arcade-teal mb-2">WAITING FOR ARCHMAGE...</h2>
               <p className="text-xs text-arcade-cream/60 font-arcade">
-                PLAYERS: {state.players.length}
+                PLAYERS: {state.players?.length || 0}
               </p>
             </div>
           )}
@@ -370,7 +370,7 @@ export default function RoomPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto tome-scrollbar flex flex-col gap-3 pr-2">
-              {state.events.length === 0 ? (
+              {!state.events || state.events.length === 0 ? (
                 <div className="text-arcade-cream/50 text-center mt-10 italic text-xs font-arcade">
                   The pages are empty...
                 </div>
@@ -402,11 +402,11 @@ export default function RoomPage() {
             <div className="flex items-center gap-2 mb-3">
               <Users size={16} className="text-arcade-teal" />
               <span className="text-xs text-arcade-teal tracking-widest font-arcade">
-                APPRENTICES ({state.players.filter(p => !p.eliminated_at).length}/{state.players.length})
+                APPRENTICES ({state.players?.filter(p => !p.eliminated_at).length || 0}/{state.players?.length || 0})
               </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {state.players.map((player) => (
+              {state.players?.map((player) => (
                 <div
                   key={player.id}
                   className={`flex items-center gap-2 p-2 rounded bg-black/30 border ${
